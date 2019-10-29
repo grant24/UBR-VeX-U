@@ -16,13 +16,15 @@ brain Brain;
 // controller instance
 controller cntrlr = controller();
 
-// motor instancnes
+// drive motor instances
 motor right_front = motor(PORT1, 1);
 motor right_mid = motor(PORT2, 1);
 motor right_back  = motor(PORT3, 1);
 motor left_front = motor(PORT6, 0);
 motor left_mid = motor(PORT7, 0);
 motor left_back = motor(PORT8, 0);
+// flapper motor instance to take in blocks
+motor flapper = motor(PORT10, 0);
 
 // user-control mode
 int main() {
@@ -57,8 +59,20 @@ int main() {
           left_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
         }
 
-        // hold button to turn flapper gear =? R2
+        // start at 0, end at -314 degrees
+        // hold button to turn flapper gear => R1
+        while (cntrlr.ButtonR1.pressing()) {
+          flapper.spin(fwd, 10, pct);
+        }
+        flapper.stop();
+        // test R2 to see motor direction
+        while (cntrlr.ButtonR2.pressing()) {
+          flapper.spin(directionType::rev, 10, pct);
+        }
+        flapper.stop();
 
+        // double degree = flapper.rotation(deg);
+        // printf("motor position => %f\n", degree);
 
         // Allow other tasks to run
         this_thread::sleep_for(10);
