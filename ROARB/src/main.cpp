@@ -27,9 +27,12 @@ motor left_back = motor(PORT8, 0);
 // user-control mode
 int main() {
    
-    while (true) { 
+    // timer instance
+    double initial_time = Brain.timer(sec);
+
+    while (Brain.timer(sec) - initial_time <= 45) { 
         Brain.Screen.printAt( 10, 50, "engage_electricity => %d", Brain.timer(sec)); 
-        
+        printf("time => %f\n", Brain.timer(sec) - initial_time);
         // auton tasks
 
         this_thread::sleep_for(10);
