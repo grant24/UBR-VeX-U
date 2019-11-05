@@ -23,19 +23,31 @@ motor right_back  = motor(PORT3, 1);
 motor left_front = motor(PORT6, 0);
 motor left_mid = motor(PORT7, 0);
 motor left_back = motor(PORT8, 0);
-// lift_motor motor instance to take in blocks
+// lift_motor instance to lift stack
 motor lift_motor = motor(PORT10, 1);
+// intake motor instance to take in blocks
+motor intake_left = motor(PORT4, 1);
+motor intake_right = motor(PORT5, 0);
+
 
 // user-control mode
 int main() {
-   
+
+    // variables for lift motor
+    const int height_pos = 4;
+    const double lift_bottom = 0;
+    const double lift_bottom_gravity = 222;
+    const double lift_top_gravity = 236;
+    const double lift_top = 310;
+    const double heights[height_pos] = {lift_bottom, lift_bottom_gravity, lift_top_gravity, lift_top}; 
+
     // controller code
     int count = 0;
     bool drive_style = 1;
     bool lift_motor_loc = 0;
+
     while (true) {
         Brain.Screen.printAt( 10, 50, "engage_electricity => %d", count++ );
-
 
         // if button is pressed, toggle driving mode => X
         if (cntrlr.ButtonX.pressing()) {
@@ -68,27 +80,27 @@ int main() {
             lift_motor_loc = !lift_motor_loc;
         }
         // button pressed, move arm to up position
-        if (temp != lift_motor_loc && lift_motor_loc == 1) {
-            double kp = 100;
-            double ki = 10;
-            double kd = 1000;
-            double offset = 0;
-            double integral = 0;
-            double last_error = 0;
-            double derivative = 0;
-            while (lift_motor.rotation(deg) != -314) {
-                double deg_val = lift_motor.rotation(deg);
-                double error = deg_val - offset;
-                integral = integral + error;
-                derivative = error - last_error;
-                double motor_rpm = kp*error + ki*integral + kd*derivative;
-                lift_motor.spin(fwd, motor_rpm/100, rpm);
-                last_error = error;
-            }
+        while (temp != lift_motor_loc && lift_motor_loc == 1) {
+            
         }
 
-        // double degree = lift_motor.rotation(deg);
-        // printf("motor position => %f\n", degree);
+        // temp code for intake motors
+        while (cntrlr.ButtonB.pressing()) {
+            intake_left.spin(directionType::fwd, 40, pct);
+            intake_right.spin(directionType::fwd, 40, pct);
+        }
+        intake_left.stop();
+        intake_right.stop();
+        while (cntrlr.ButtonY.pressing()) {
+            intake_left.spin(directionType::fwd, 60, pct);
+            intake_right.spin(directionType::fwd, 60, pct);
+        }
+        intake_left.stop();
+        intake_right.stop();
+
+        // output to get motor arm position in degrees
+        double degree = lift_motor.rotation(deg);
+        printf("motor position => %f\n", degree);
 
         // Allow other tasks to run
         this_thread::sleep_for(10);
