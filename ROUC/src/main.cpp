@@ -34,17 +34,17 @@ motor intake_right = motor(PORT5, 0);
 int main() {
 
     // variables for lift motor
-    const int height_pos = 4;
+    bool lift_motor_loc = false;
+    int height_pos = 0;
     const double lift_bottom = 0;
     const double lift_bottom_gravity = 222;
     const double lift_top_gravity = 236;
     const double lift_top = 310;
-    const double heights[height_pos] = {lift_bottom, lift_bottom_gravity, lift_top_gravity, lift_top}; 
+    const double heights[4] = {lift_bottom, lift_bottom_gravity, lift_top_gravity, lift_top}; 
 
     // controller code
     int count = 0;
     bool drive_style = 1;
-    bool lift_motor_loc = 0;
 
     while (true) {
         Brain.Screen.printAt( 10, 50, "engage_electricity => %d", count++ );
@@ -75,14 +75,29 @@ int main() {
 
         // start at 0, end at -314 degrees
         // press button to turn lift_motor gear to other position => Up 
-        bool temp = lift_motor_loc;
         if (cntrlr.ButtonUp.pressing()) {
             lift_motor_loc = !lift_motor_loc;
         }
         // button pressed, move arm to up position
-        while (temp != lift_motor_loc && lift_motor_loc == 1) {
+        if (lift_motor_loc && height_pos != 3) {
+            if (lift_motor.rotation(deg) < lift_bottom_gravity) {
+                height_pos++;
+                lift_motor.startRotateTo(lift_bottom_gravity, deg, 20, velocityUnits::pct);
+            }
+            else if (lift_motor.rotation(deg) < lift_top_gravity) {
+                height_pos++;
+                lift_motor.startRotateTo(lift_bottom_gravity, deg, 10, velocityUnits::pct);
+            }
+            else if (lift_motor.rotation(deg) < lift_top) {
+                height_pos++;
+                lift_motor.startRotateTo(lift_bottom_gravity, deg, -5, velocityUnits::pct);
+            }
+        }
+        // button pressed, move arm to down position
+        else if (!lift_motor_loc && height_pos != 0) {
             
         }
+
 
         // temp code for intake motors
         while (cntrlr.ButtonB.pressing()) {
@@ -97,6 +112,7 @@ int main() {
         }
         intake_left.stop();
         intake_right.stop();
+
 
         // output to get motor arm position in degrees
         double degree = lift_motor.rotation(deg);
