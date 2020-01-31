@@ -1,56 +1,99 @@
-/*----------------------------------------------------------------------------*/
-/*                                                                            */
-/*    Module:       main.cpp                                                  */
-/*    Author:       C:\Users\grega                                            */
-/*    Created:      Wed Oct 09 2019                                           */
-/*    Description:  V5 project                                                */
-/*                                                                            */
-/*----------------------------------------------------------------------------*/
 #include "vex.h"
 
 using namespace vex;
 
-// A global instance of vex::brain used for printing to the V5 brain screen
-brain Brain;
 
-// controller instance
-controller cntrlr = controller();
-
-// motor instancnes
+// motor instances
 motor right_front = motor(PORT1, 1);
 motor right_mid = motor(PORT2, 1);
 motor right_back  = motor(PORT3, 1);
 motor left_front = motor(PORT6, 0);
 motor left_mid = motor(PORT7, 0);
 motor left_back = motor(PORT8, 0);
-motor lift_motor = motor(PORT10, 0);
-// user-control mode
+motor lift_motor_0 = motor(PORT9, 0);
+motor lift_motor_1 = motor(PORT10, 1);
+motor intake_left = motor(PORT4, 1)
+motor intake_right = motor(PORT5, 0)
+
 int main() {
-   
-    // timer instance
-    double initial_time = Brain.timer(sec);
+  // Initializing Robot Configuration. DO NOT REMOVE!
+  vexcodeInit();
+  
+  //Initial movement (15.4 in) towards first 5 blocks from start
+  right_front.startRotateFor(fwd, 1.23, rotationUnits::rev, 50, velocityUnits::pct);
+  left_front.startRotateFor(fwd, 1.23, rotationUnits::rev, 50, velocityUnits::pct);
+  right_mid.startRotateFor(fwd, 1.23, rotationUnits::rev, 50, velocityUnits::pct);
+  left_mid.startRotateFor(fwd, 1.23, rotationUnits::rev, 50, velocityUnits::pct);
+  right_back.startRotateFor(fwd, 1.23, rotationUnits::rev, 50, velocityUnits::pct);
+  left_back.startRotateFor(fwd, 1.23, rotationUnits::rev, 50, velocityUnits::pct);
 
-    while (Brain.timer(sec) - initial_time <= 45) {     //45 sec autonomous timer
-        Brain.Screen.printAt( 10, 50, "engage_electricity => %d", Brain.timer(sec)); 
-        printf("time => %f\n", Brain.timer(sec) - initial_time);
-        // auton tasks
-        lift_motor.startRotateFor(1.0, deg);    //start rotating motor for lift arm - might need to switch to function call that uses velocity too
-        right_front.startRotateFor(fwd, 1.0, deg);        //concurrently start rotating all wheels
-        right_mid.startRotateFor(fwd, 1.0, deg);         
-        right_back.startRotateFor(fwd, 1.0, deg);
-        left_front.startRotateFor(fwd, 1.0, deg);
-        left_mid.startRotateFor(fwd, 1.0, deg);
-        left_back.startRotateFor(fwd, 1.0, deg);
-        
-        right_front.startRotateFor(directionType::rev, 1.0, deg);  //concurrently start rotating all wheels in reverse
-        right_mid.startRotateFor(directionType::rev, 1.0, deg);        
-        right_back.startRotateFor(directionType::rev, 1.0, deg);
-        left_front.startRotateFor(directionType::rev, 1.0, deg);
-        left_mid.startRotateFor(directionType::rev, 1.0, deg); 
-        left_back.startRotateFor(directionType::rev, 1.0, deg);
+//While wheels are spinning, spins intake motors concurrently
+  while(right_front.isSpinning()){
+    intake_left.spin(directionType::fwd, 100, velocityUnits::pct);
+    intake_right.spin(directionType::fwd, 100, velocityUnits::pct);
+  }
 
-        this_thread::sleep_for(10);
-    }
-
-  return 0;
+  }
 }
+
+// // ---- START VEXCODE CONFIGURED DEVICES ----
+// // Robot Configuration:
+// // [Name]               [Type]        [Port(s)]
+// // ---- END VEXCODE CONFIGURED DEVICES ----
+// /*----------------------------------------------------------------------------*/
+// /*                                                                            */
+// /*    Module:       main.cpp                                                  */
+// /*    Author:       C:\Users\grega                                            */
+// /*    Created:      Wed Oct 09 2019                                           */
+// /*    Description:  V5 project                                                */
+// /*                                                                            */
+// /*----------------------------------------------------------------------------*/
+// #include "vex.h"
+// 
+// using namespace vex;
+// 
+// // A global instance of vex::brain used for printing to the V5 brain screen
+// brain Brain;
+// 
+// // controller instance
+// controller cntrlr = controller();
+// 
+// // motor instancnes
+// motor right_front = motor(PORT1, 1);
+// motor right_mid = motor(PORT2, 1);
+// motor right_back  = motor(PORT3, 1);
+// motor left_front = motor(PORT6, 0);
+// motor left_mid = motor(PORT7, 0);
+// motor left_back = motor(PORT8, 0);
+// motor lift_motor = motor(PORT10, 0);
+// // user-control mode
+// int main() {
+//    
+//     // timer instance
+//     double initial_time = Brain.timer(sec);
+// 
+//     while (Brain.timer(sec) - initial_time <= 45) {     //45 sec autonomous timer
+//         Brain.Screen.printAt( 10, 50, "engage_electricity => %d", Brain.timer(sec)); 
+//         printf("time => %f\n", Brain.timer(sec) - initial_time);
+//         // auton tasks
+//         lift_motor.startRotateFor(1.0, deg);    //start rotating motor for lift arm - might need to switch to function call that uses velocity too
+//         right_front.startRotateFor(fwd, 1.0, deg);        //concurrently start rotating all wheels
+//         right_mid.startRotateFor(fwd, 1.0, deg);         
+//         right_back.startRotateFor(fwd, 1.0, deg);
+//         left_front.startRotateFor(fwd, 1.0, deg);
+//         left_mid.startRotateFor(fwd, 1.0, deg);
+//         left_back.startRotateFor(fwd, 1.0, deg);
+//         
+//         right_front.startRotateFor(directionType::rev, 1.0, deg);  //concurrently start rotating all wheels in reverse
+//         right_mid.startRotateFor(directionType::rev, 1.0, deg);        
+//         right_back.startRotateFor(directionType::rev, 1.0, deg);
+//         left_front.startRotateFor(directionType::rev, 1.0, deg);
+//         left_mid.startRotateFor(directionType::rev, 1.0, deg); 
+//         left_back.startRotateFor(directionType::rev, 1.0, deg);
+// 
+//         this_thread::sleep_for(10);
+//     }
+// 
+//   return 0;
+// }
+// 
