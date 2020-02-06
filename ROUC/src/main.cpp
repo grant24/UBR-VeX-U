@@ -34,6 +34,9 @@ motor lift_motor_1 = motor(PORT10, 0);
 // intake motor instance to take in blocks
 motor intake_left = motor(PORT4, 0);
 motor intake_right = motor(PORT5, 1);
+// hinge motor for intake
+motor hinge_left = motor(PORT11, 1);
+motor hinge_right = motor(PORT12, 0);
 
 
 int main() {
@@ -46,6 +49,11 @@ int main() {
 
   // initial intake mode
   int mode = 0;
+
+  // initial hinge power and timer and engager
+  double pwr = 0;
+  double curr_time = Brain.Timer.time(sec);
+  bool engage = true;
 
   while (true) {
 
@@ -74,47 +82,75 @@ int main() {
           left_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
       }
 
-      // lift motor
-      lift_motor_0.spin(fwd, cntrlr.Axis2.value()/2, velocityUnits::pct);
-      lift_motor_1.spin(fwd, cntrlr.Axis2.value()/2, velocityUnits::pct);        
+      // lift motor - active when holding right arrow
+      while (cntrlr.ButtonRight.pressing()) {
+        lift_motor_0.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
+        lift_motor_1.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);      
+      }
+      lift_motor_0.spin(fwd, 0, velocityUnits::pct);
+        lift_motor_1.spin(fwd, 0, velocityUnits::pct);
 
-      // Intake Control for picking up cubes */
+      // hinge motor - increment power if up or down is pressed
+      if (cntrlr.ButtonUp.pressing() && pwr < 100 && engage == true) {
+        pwr += 1.0;
+        printf("power percentage => %f\n", pwr);
+        engage = false;
+      }
+      else if (cntrlr.ButtonDown.pressing() && pwr > -100 && engage == true) {
+        pwr -= 1.0;
+        printf("power percentage => %f\n", pwr);
+        engage = false;
+      }
+      else if (cntrlr.ButtonLeft.pressing() && pwr > -100) {
+        pwr = 0;
+        printf("power percentage => %f\n", pwr);
+      }
+      hinge_left.spin(fwd, pwr, pct);
+      hinge_right.spin(fwd, pwr, pct);
+
+      // cooldown for hinge (0.5 seconds)
+      if (Brain.Timer.time(sec) - curr_time > 0.5 && engage == false) {
+        engage = true;
+        curr_time = Brain.Timer.time(sec);
+      }
+
+      // Intake Control for picking up cubes
       switch (mode) {
         // stopped
         case 0: intake_left.spin(fwd, 0, velocityUnits::pct);
                 intake_right.spin(fwd, 0, velocityUnits::pct);
-                while (cntrlr.ButtonA.pressing()) {
+                if (cntrlr.ButtonA.pressing()) {
                   mode = 1;
                 }
-                while (cntrlr.ButtonB.pressing()) {
+                if (cntrlr.ButtonB.pressing()) {
                   mode = 2;
                 }
                 break;
         // sucking
-        case 1:	intake_left.spin(fwd, 127, velocityUnits::pct);
-                intake_right.spin(fwd, 127, velocityUnits::pct);
-                while (cntrlr.ButtonA.pressing()) {
+        case 1:	intake_left.spin(fwd, 100, velocityUnits::pct);
+                intake_right.spin(fwd, 100, velocityUnits::pct);
+                if (cntrlr.ButtonA.pressing()) {
                   mode = 0;
                 }
-                while (cntrlr.ButtonB.pressing()) {
+                if (cntrlr.ButtonB.pressing()) {
                   mode = 2;
                 }
                 break;
         // spitting
-        case 2: intake_left.spin(fwd, -127, velocityUnits::pct);
-                intake_right.spin(fwd, -127, velocityUnits::pct);
-                while (cntrlr.ButtonA.pressing()) {
+        case 2: intake_left.spin(fwd, -100, velocityUnits::pct);
+                intake_right.spin(fwd, -100, velocityUnits::pct);
+                if (cntrlr.ButtonA.pressing()) {
                   mode = 1;
                 }
-                while (cntrlr.ButtonB.pressing()) {
+                if (cntrlr.ButtonB.pressing()) {
                   mode = 0;
                 }
                 break;
       }
 
       // output to get motor arm position in degrees
-      double degree = lift_motor_0.rotation(deg);
-      printf("motor position => %f\n", degree);
+      // double degree = lift_motor_0.rotation(deg);
+      // printf("motor position => %f\n", degree);
 
       // Allow other tasks to run
       this_thread::sleep_for(10);
