@@ -22,12 +22,12 @@ using namespace vex;
 controller cntrlr = controller();
 
 // drive motor instances
-motor right_front = motor(PORT1, 1);
-motor right_mid = motor(PORT2, 1);
-motor right_back  = motor(PORT3, 1);
-motor left_front = motor(PORT6, 0);
-motor left_mid = motor(PORT7, 0);
-motor left_back = motor(PORT8, 0);
+motor right_front = motor(PORT18, 1);
+motor right_mid = motor(PORT19, 1);
+motor right_back  = motor(PORT20, 1);
+motor left_front = motor(PORT14, 0);
+motor left_mid = motor(PORT15, 0);
+motor left_back = motor(PORT16, 0);
 // lift_motor instance to lift stack
 motor lift_motor_0 = motor(PORT9, 1);
 motor lift_motor_1 = motor(PORT10, 0);
