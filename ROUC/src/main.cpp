@@ -42,6 +42,14 @@ motor hinge_right = motor(PORT12, 0);
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+
+  // potentiometer instance
+  vex::pot pot_left = vex::pot(Brain.ThreeWirePort.A);
+  vex::pot pot_right = vex::pot(Brain.ThreeWirePort.B);
+
+  // initial potentiometer positions
+  double pot_left_pos = 76.2;
+  double pot_right_pos = 146.3;
   
   // controller code
   int count = 0;
@@ -58,6 +66,7 @@ int main() {
   while (true) {
 
       Brain.Screen.printAt( 10, 50, "engage_electricity => %d", count++ );
+
 
       // if button is pressed, toggle driving mode => X
       if (cntrlr.ButtonX.pressing()) {
@@ -82,6 +91,7 @@ int main() {
           left_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
       }
 
+
       // lift motor - active when holding right arrow
       while (cntrlr.ButtonRight.pressing()) {
         lift_motor_0.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
@@ -90,23 +100,20 @@ int main() {
       lift_motor_0.spin(fwd, 0, velocityUnits::pct);
         lift_motor_1.spin(fwd, 0, velocityUnits::pct);
 
+
       // hinge motor - increment power if up or down is pressed
-      if (cntrlr.ButtonUp.pressing() && pwr < 100 && engage == true) {
-        pwr += 1.0;
-        printf("power percentage => %f\n", pwr);
-        engage = false;
+      //if (pot_left.value(deg) < pot_left_pos)
+      if(((pot_left.value(deg) < pot_left_pos - 1) && (pot_left.value(deg) > pot_left_pos + 1))) //if in between +- 1 degree dont move
+      { 
+        hinge_left.spin(fwd, 0, pct);
+      } 
+      else if (pot_left.value(deg) > pot_left_pos) { //move out
+        hinge_left.spin(fwd, -2, pct);
       }
-      else if (cntrlr.ButtonDown.pressing() && pwr > -100 && engage == true) {
-        pwr -= 1.0;
-        printf("power percentage => %f\n", pwr);
-        engage = false;
+      else if (pot_left.value(deg) < pot_left_pos) //move in
+      {
+        hinge_left.spin(fwd, 2, pct);
       }
-      else if (cntrlr.ButtonLeft.pressing() && pwr > -100) {
-        pwr = 0;
-        printf("power percentage => %f\n", pwr);
-      }
-      hinge_left.spin(fwd, pwr, pct);
-      hinge_right.spin(fwd, pwr, pct);
 
       // cooldown for hinge (0.5 seconds)
       if (Brain.Timer.time(sec) - curr_time > 0.5 && engage == false) {
@@ -114,7 +121,8 @@ int main() {
         curr_time = Brain.Timer.time(sec);
       }
 
-      // Intake Control for picking up cubes
+
+      // intake Control for picking up cubes
       switch (mode) {
         // stopped
         case 0: intake_left.spin(fwd, 0, velocityUnits::pct);
@@ -148,9 +156,10 @@ int main() {
                 break;
       }
 
-      // output to get motor arm position in degrees
-      // double degree = lift_motor_0.rotation(deg);
-      // printf("motor position => %f\n", degree);
+
+      // pot test
+      printf("pot_left position => %f     |     ", pot_left.value(deg));
+      printf("pot_right position => %f\n", pot_right.value(deg));
 
       // Allow other tasks to run
       this_thread::sleep_for(10);
