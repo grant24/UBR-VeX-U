@@ -50,6 +50,19 @@ int main() {
   // initial potentiometer positions
   double pot_left_pos = 76.2;
   double pot_right_pos = 146.3;
+
+  // hinge power (percent), tolerance (int), incrementer (degree)
+  int pwr = 4;
+  int tol = 1;
+  int inc = 5;
+
+  // initial hinge timer and engager
+  double hinge_time = Brain.Timer.time(sec);
+  bool hinge_engage = true;
+
+  // initial intake timer and engager
+  double intake_time = Brain.Timer.time(sec);
+  bool intake_engage = true;
   
   // controller code
   int count = 0;
@@ -57,11 +70,6 @@ int main() {
 
   // initial intake mode
   int mode = 0;
-
-  // initial hinge power and timer and engager
-  double pwr = 0;
-  double curr_time = Brain.Timer.time(sec);
-  bool engage = true;
 
   while (true) {
 
@@ -92,33 +100,61 @@ int main() {
       }
 
 
-      // lift motor - active when holding right arrow
-      while (cntrlr.ButtonRight.pressing()) {
+      // lift motor - active when R1 is held
+      while (cntrlr.ButtonR1.pressing()) {
         lift_motor_0.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
         lift_motor_1.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);      
       }
       lift_motor_0.spin(fwd, 0, velocityUnits::pct);
-        lift_motor_1.spin(fwd, 0, velocityUnits::pct);
+      lift_motor_1.spin(fwd, 0, velocityUnits::pct);
 
 
-      // hinge motor - increment power if up or down is pressed
-      //if (pot_left.value(deg) < pot_left_pos)
-      if(((pot_left.value(deg) < pot_left_pos - 1) && (pot_left.value(deg) > pot_left_pos + 1))) //if in between +- 1 degree dont move
+      // hinge motor position management
+      // left
+      if ((pot_left.value(deg) > pot_left_pos - tol) && (pot_left.value(deg) < pot_left_pos + tol)) //if within tolerance, dont move
       { 
         hinge_left.spin(fwd, 0, pct);
       } 
       else if (pot_left.value(deg) > pot_left_pos) { //move out
-        hinge_left.spin(fwd, -2, pct);
+        hinge_left.spin(fwd, -pwr, pct);
       }
       else if (pot_left.value(deg) < pot_left_pos) //move in
       {
-        hinge_left.spin(fwd, 2, pct);
+        hinge_left.spin(fwd, pwr, pct);
+      }
+      // right
+      if(((pot_right.value(deg) < pot_right_pos + tol) && (pot_right.value(deg) > pot_right_pos - tol))) // if within tolerance, dont move
+      { 
+        hinge_right.spin(fwd, 0, pct);
+      } 
+      else if (pot_right.value(deg) > pot_right_pos) { //move out
+        hinge_right.spin(fwd, pwr, pct);
+      }
+      else if (pot_right.value(deg) < pot_right_pos) //move in
+      {
+        hinge_right.spin(fwd, -pwr, pct);
       }
 
-      // cooldown for hinge (0.5 seconds)
-      if (Brain.Timer.time(sec) - curr_time > 0.5 && engage == false) {
-        engage = true;
-        curr_time = Brain.Timer.time(sec);
+      // hinge motor degree incrementation
+      // pressing Up to squeeze more
+      if (cntrlr.ButtonUp.pressing() && hinge_engage == true) {
+        pot_left_pos += inc;
+        pot_right_pos -= inc;
+        hinge_engage = false;
+        hinge_time = Brain.Timer.time(sec);
+      }
+      // pressing Down to squeeze less
+      else if (cntrlr.ButtonDown.pressing() && hinge_engage == true) {
+        pot_left_pos -= inc;
+        pot_right_pos += inc;
+        hinge_engage = false;
+        hinge_time = Brain.Timer.time(sec);
+      }
+
+      // cooldown for hinge increment button (0.5 seconds)
+      if (Brain.Timer.time(sec) - hinge_time > 0.5 && hinge_engage == false) {
+        hinge_engage = true;
+        hinge_time = Brain.Timer.time(sec);
       }
 
 
@@ -154,6 +190,12 @@ int main() {
                   mode = 0;
                 }
                 break;
+      }
+
+      // cooldown for intake (0.5 seconds)
+      if (Brain.Timer.time(sec) - intake_time > 0.5 && intake_engage == false) {
+        intake_engage = true;
+        intake_time = Brain.Timer.time(sec);
       }
 
 
