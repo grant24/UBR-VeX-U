@@ -52,7 +52,8 @@ int main() {
   double pot_right_pos = 146.3;
 
   // hinge power (percent), tolerance (int), incrementer (degree)
-  int pwr = 4;
+  double lift_pwr = .05;
+  double pwr = 4;
   int tol = 1;
   int inc = 5;
 
@@ -100,10 +101,39 @@ int main() {
       }
 
 
-      // lift motor - active when R1 is held
+      // lift motor - active when R1 is held - move arms out of the way
       while (cntrlr.ButtonR1.pressing()) {
         lift_motor_0.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
-        lift_motor_1.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);      
+        lift_motor_1.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
+
+        right_front.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+        right_mid.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+        right_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+        left_front.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+        left_mid.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+        left_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+
+        if ((pot_left.value(deg) > 40 - tol) && (pot_left.value(deg) < 40 + tol)) {//if within tolerance, dont move 
+          hinge_left.spin(fwd, 0, pct);
+        } 
+        else if (pot_left.value(deg) > 40) { //move out
+          hinge_left.spin(fwd, -lift_pwr, pct);
+        }
+        else if (pot_left.value(deg) < 40) //move in
+        {
+          hinge_left.spin(fwd, lift_pwr, pct);
+        }
+        // right
+        if ((pot_right.value(deg) < 182 + tol) && (pot_right.value(deg) > 182 - tol)) {// if within tolerance, dont move 
+          hinge_right.spin(fwd, 0, pct);
+        } 
+        else if (pot_right.value(deg) > 182) { //move out
+          hinge_right.spin(fwd, lift_pwr, pct);
+        }
+        else if (pot_right.value(deg) < 182) //move in
+        {
+          hinge_right.spin(fwd, -lift_pwr, pct);
+        }
       }
       lift_motor_0.spin(fwd, 0, velocityUnits::pct);
       lift_motor_1.spin(fwd, 0, velocityUnits::pct);
@@ -111,8 +141,7 @@ int main() {
 
       // hinge motor position management
       // left
-      if ((pot_left.value(deg) > pot_left_pos - tol) && (pot_left.value(deg) < pot_left_pos + tol)) //if within tolerance, dont move
-      { 
+      if ((pot_left.value(deg) > pot_left_pos - tol) && (pot_left.value(deg) < pot_left_pos + tol)) { //if within tolerance, dont move 
         hinge_left.spin(fwd, 0, pct);
       } 
       else if (pot_left.value(deg) > pot_left_pos) { //move out
@@ -123,8 +152,7 @@ int main() {
         hinge_left.spin(fwd, pwr, pct);
       }
       // right
-      if(((pot_right.value(deg) < pot_right_pos + tol) && (pot_right.value(deg) > pot_right_pos - tol))) // if within tolerance, dont move
-      { 
+      if ((pot_right.value(deg) < pot_right_pos + tol) && (pot_right.value(deg) > pot_right_pos - tol)) { // if within tolerance, dont move
         hinge_right.spin(fwd, 0, pct);
       } 
       else if (pot_right.value(deg) > pot_right_pos) { //move out
@@ -163,31 +191,43 @@ int main() {
         // stopped
         case 0: intake_left.spin(fwd, 0, velocityUnits::pct);
                 intake_right.spin(fwd, 0, velocityUnits::pct);
-                if (cntrlr.ButtonA.pressing()) {
+                if (cntrlr.ButtonA.pressing() && intake_engage == true) {
                   mode = 1;
+                  intake_engage = false;
+                  intake_time = Brain.Timer.time(sec);
                 }
-                if (cntrlr.ButtonB.pressing()) {
+                if (cntrlr.ButtonB.pressing() && intake_engage == true) {
                   mode = 2;
+                  intake_engage = false;
+                  intake_time = Brain.Timer.time(sec);
                 }
                 break;
         // sucking
         case 1:	intake_left.spin(fwd, 100, velocityUnits::pct);
                 intake_right.spin(fwd, 100, velocityUnits::pct);
-                if (cntrlr.ButtonA.pressing()) {
+                if (cntrlr.ButtonA.pressing() && intake_engage == true) {
                   mode = 0;
+                  intake_engage = false;
+                  intake_time = Brain.Timer.time(sec);
                 }
-                if (cntrlr.ButtonB.pressing()) {
+                if (cntrlr.ButtonB.pressing() && intake_engage == true) {
                   mode = 2;
+                  intake_engage = false;
+                  intake_time = Brain.Timer.time(sec);
                 }
                 break;
         // spitting
         case 2: intake_left.spin(fwd, -100, velocityUnits::pct);
                 intake_right.spin(fwd, -100, velocityUnits::pct);
-                if (cntrlr.ButtonA.pressing()) {
+                if (cntrlr.ButtonA.pressing() && intake_engage == true) {
                   mode = 1;
+                  intake_engage = false;
+                  intake_time = Brain.Timer.time(sec);
                 }
-                if (cntrlr.ButtonB.pressing()) {
+                if (cntrlr.ButtonB.pressing() && intake_engage == true) {
                   mode = 0;
+                  intake_engage = false;
+                  intake_time = Brain.Timer.time(sec);
                 }
                 break;
       }
