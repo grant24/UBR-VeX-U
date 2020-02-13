@@ -15,10 +15,10 @@ vex::brain Brain;
 vex::controller cntrlr;
 
 // define your global instances of motors and other devices here
-motor main_motor_left = motor(PORT1, 0);
-motor main_motor_right = motor(PORT2, 1);
+motor main_motor_left = motor(PORT1, 1);
+motor main_motor_right = motor(PORT11, 0);
 motor claw_angle = motor(PORT3, 0);
-motor claw_left = motor(PORT4, 0);
+motor claw_open = motor(PORT4, 0);
 
 int main() {
     int count = 0;
