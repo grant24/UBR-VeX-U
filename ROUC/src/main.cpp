@@ -48,13 +48,16 @@ int main() {
   vex::pot pot_right = vex::pot(Brain.ThreeWirePort.B);
 
   // initial potentiometer positions
-  double pot_left_pos = 76.2;
-  double pot_right_pos = 146.3;
+  double pot_left_pos = 72.8;
+  double pot_right_pos = 144.2;
+  // instances for lift activation
+  double pot_left_poss = 72.82 - 15;
+  double pot_right_poss = 144.5 + 15;
 
   // hinge power (percent), tolerance (int), incrementer (degree)
-  double lift_pwr = .05;
-  double pwr = 4;
-  int tol = 1;
+  double lift_pwr = 1;
+  double pwr = 6;
+  double tol = 0.8;
   int inc = 5;
 
   // initial hinge timer and engager
@@ -106,31 +109,31 @@ int main() {
         lift_motor_0.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
         lift_motor_1.spin(fwd, cntrlr.Axis2.value()/3, velocityUnits::pct);
 
-        right_front.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
-        right_mid.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
-        right_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
-        left_front.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
-        left_mid.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
-        left_back.spin(directionType::fwd, cntrlr.Axis3.value(), velocityUnits::pct);
+        right_front.spin(directionType::fwd, cntrlr.Axis3.value()/8, velocityUnits::pct);
+        right_mid.spin(directionType::fwd, cntrlr.Axis3.value()/8, velocityUnits::pct);
+        right_back.spin(directionType::fwd, cntrlr.Axis3.value()/8, velocityUnits::pct);
+        left_front.spin(directionType::fwd, cntrlr.Axis3.value()/8, velocityUnits::pct);
+        left_mid.spin(directionType::fwd, cntrlr.Axis3.value()/8, velocityUnits::pct);
+        left_back.spin(directionType::fwd, cntrlr.Axis3.value()/8, velocityUnits::pct);
 
-        if ((pot_left.value(deg) > 40 - tol) && (pot_left.value(deg) < 40 + tol)) {//if within tolerance, dont move 
+        if ((pot_left.value(deg) > pot_left_poss - tol) && (pot_left.value(deg) < pot_left_poss + tol)) { //if within tolerance, dont move 
           hinge_left.spin(fwd, 0, pct);
         } 
-        else if (pot_left.value(deg) > 40) { //move out
+        else if (pot_left.value(deg) > pot_left_poss) { //move out
           hinge_left.spin(fwd, -lift_pwr, pct);
         }
-        else if (pot_left.value(deg) < 40) //move in
+        else if (pot_left.value(deg) < pot_left_poss) //move in
         {
           hinge_left.spin(fwd, lift_pwr, pct);
         }
         // right
-        if ((pot_right.value(deg) < 182 + tol) && (pot_right.value(deg) > 182 - tol)) {// if within tolerance, dont move 
+        if ((pot_right.value(deg) < pot_right_poss + tol) && (pot_right.value(deg) > pot_right_poss - tol)) { // if within tolerance, dont move 
           hinge_right.spin(fwd, 0, pct);
         } 
-        else if (pot_right.value(deg) > 182) { //move out
+        else if (pot_right.value(deg) > pot_right_poss) { //move out
           hinge_right.spin(fwd, lift_pwr, pct);
         }
-        else if (pot_right.value(deg) < 182) //move in
+        else if (pot_right.value(deg) < pot_right_poss) //move in
         {
           hinge_right.spin(fwd, -lift_pwr, pct);
         }
