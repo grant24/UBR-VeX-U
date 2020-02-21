@@ -1,29 +1,3 @@
-// To complete the VEXcode V5 Text project upgrade process, please follow the
-// steps below.
-// 
-// 1. You can use the Robot Configuration window to recreate your V5 devices
-//   - including any motors, sensors, 3-wire devices, and controllers.
-// 
-// 2. All previous code located in main.cpp has now been commented out. You
-//   will need to migrate this code to the new "int main" structure created
-//   below and keep in mind any new device names you may have set from the
-//   Robot Configuration window. 
-// 
-// If you would like to go back to your original project, a complete backup
-// of your original (pre-upgraded) project was created in a backup folder
-// inside of this project's folder.
-
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// ---- END VEXCODE CONFIGURED DEVICES ----
-
-
-
-// int main() {
-//   Initializing Robot Configuration. DO NOT REMOVE!
-//   vexcodeInit();
-  
-// }
-
 // // ---- START VEXCODE CONFIGURED DEVICES ----
 // // Robot Configuration:
 // // [Name]               [Type]        [Port(s)]
@@ -36,6 +10,7 @@
 // /*    Description:  V5 project                                                */
 // /*                                                                            */
 // /*----------------------------------------------------------------------------*/
+
 #include "vex.h"
 #include <unistd.h>
 #include <stdio.h>
@@ -52,21 +27,20 @@ controller cntrlr = controller();
 motor right_front = motor(PORT14, 0);
 motor right_mid = motor(PORT15, 0);
 motor right_back  = motor(PORT16, 0);
-//Dont touch port 4 and 5
 motor left_front = motor(PORT18, 1);
 motor left_mid = motor(PORT19, 1);
 motor left_back = motor(PORT20, 1);
-//Port 9 currently not being used
+// lift motor instances
 motor lift_motor_0 = motor(PORT9, 1);
 motor lift_motor_1 = motor(PORT10, 0);
-
+// intake motor instances
 motor intake_left = motor(PORT4, 0);
 motor intake_right = motor(PORT5,1);
-
+// hinge motor instances
 motor hinge_left = motor(PORT11, 1);
 motor hinge_right = motor(PORT12, 0);
 
-
+// timer and cooldowns 
 double intake_time = Brain.Timer.time(sec);
 bool intake_engage = true;
 bool hinge = true;
@@ -75,53 +49,70 @@ bool hinge = true;
 double lift_pwr = .05;
 double pwr = 3;
 int tol = 1;
-int inc = 5;
 
 // initial potentiometer positions
-double pot_left_pos = 72.8 + 20;
-double pot_right_pos = 144.2 - 20;
+double pot_left_pos = 72.8 + 16;
+double pot_right_pos = 144.2 - 16;
 
-
-
+// inch to wheel revolution conversion
 const float gearRat = 1; // .5 turn of motor = 1 turn of wheel, 1 if directly connected to motor without gears    
 const float wheel_dim = 4; //inches
 const float wheel_cir  = wheel_dim * 3.1416; //dim * pi
 const float turnDim = 21; //distance from top left wheel to bottom right wheel
 
 
-void move_straight(float inches, float power){
-        const float inchesPerDegree =  wheel_cir / 360; 
-        const float degrees = inches / inchesPerDegree;
-        right_front.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);                  //concurrently start rotating all wheels
-        right_mid.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);         
-        right_back.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
-        left_front.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
-        left_mid.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
-        left_back.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
-        this_thread::sleep_for(50);
+void move_straight(float inches, float power) {
+  const float inchesPerDegree =  wheel_cir / 360; 
+  const float degrees = inches / inchesPerDegree;
+
+  right_front.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);                  //concurrently start rotating all wheels
+  right_mid.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);         
+  right_back.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
+  left_front.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
+  left_mid.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
+  left_back.startRotateFor(degrees * gearRat, rotationUnits::deg, power, velocityUnits::pct);
+
+  this_thread::sleep_for(50);
 }
 
 //Positive Degrees is a right turn
 //Negative Degrees is a left turn
-void turn(float degrees, float power){
+void turn(float degrees, float power) {
   const float turnRatio = turnDim / wheel_dim;
   const float wheelDeg = turnRatio * degrees;
-        right_front.startRotateFor(wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);                //concurrently start rotating all wheels
-        right_mid.startRotateFor(wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);     
-        right_back.startRotateFor(wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct); 
-        left_front.startRotateFor(-wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);
-        left_mid.startRotateFor(-wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);
-        left_back.startRotateFor(-wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);
-        this_thread::sleep_for(50);
 
+  right_front.startRotateFor(wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);                //concurrently start rotating all wheels
+  right_mid.startRotateFor(wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);     
+  right_back.startRotateFor(wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct); 
+  left_front.startRotateFor(-wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);
+  left_mid.startRotateFor(-wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);
+  left_back.startRotateFor(-wheelDeg * gearRat / 2, rotationUnits::deg, power, velocityUnits::pct);
+
+  this_thread::sleep_for(50);
+}
+
+void lift(float degrees, float power) {
+  lift_motor_0.startRotateFor(degrees, rotationUnits::deg, power, velocityUnits::pct);
+  lift_motor_1.startRotateFor(degrees, rotationUnits::deg, power, velocityUnits::pct);
+  this_thread::sleep_for(5000);
+  // move_straight(1.0, 2.5);
+  // this_thread::sleep_for(1000);
+  move_straight(-5, 5);
+  this_thread::sleep_for(2000);
+  lift_motor_0.startRotateTo(0, rotationUnits::deg, power, velocityUnits::pct);
+  lift_motor_1.startRotateTo(0, rotationUnits::deg, power, velocityUnits::pct);
 }
 
 int hingePosition(){
+
       vex::pot pot_left = vex::pot(Brain.ThreeWirePort.A);
       vex::pot pot_right = vex::pot(Brain.ThreeWirePort.B);
+
       while (true) {
-          intake_left.spin(fwd, 100, velocityUnits::pct);
-          intake_right.spin(fwd, 100, velocityUnits::pct);
+
+        intake_left.spin(fwd, 100, velocityUnits::pct);
+        intake_right.spin(fwd, 100, velocityUnits::pct);
+
         if ((pot_left.value(deg) > pot_left_pos - tol) && (pot_left.value(deg) < pot_left_pos + tol)) { //if within tolerance, dont move 
           hinge_left.spin(fwd, 0, pct);
         } 
@@ -143,76 +134,104 @@ int hingePosition(){
         {
           hinge_right.spin(fwd, -pwr, pct);
         }
+
         this_thread::sleep_for(50);
     }
   return 0;
 }
 
-int main(){
-  int conc =  (int) vex::thread::hardware_concurrency;
-  printf("concurrent thread avaialbilioty => %d", conc);
-  int hinge_mode = 0;
+int stack_tower() {
 
-  if (hinge_mode == 1){             //Default
-    pot_left_pos = 76.2;
-    pot_right_pos = 146.3;
-  }else if (hinge_mode == 2){       //Intake
-    pot_left_pos = 76.2;
-    pot_right_pos = 146.3;
-  }else if (hinge_mode == 3){       //Unload  
-    pot_left_pos = 76.2;
-    pot_right_pos = 146.3;
-  }
-    //spin up grabber motors and leave them running for the whole period
-    // bot start position method (move arms and allow loader to get flipped open, after pause, close grabber arms for intake)
-    thread MyThread = thread(hingePosition);
+  vex::pot pot_left = vex::pot(Brain.ThreeWirePort.A);
+  vex::pot pot_right = vex::pot(Brain.ThreeWirePort.B);
 
-    double second = 1000;
-    float move_power = 8;
-    this_thread::sleep_for(second/2);
-    //Drive Foward and Intake 4 blocks
-    move_straight(36, move_power);
+  double pot_left_poss = pot_left_pos - 16;
+  double pot_right_poss  = pot_right_pos + 16;
 
-    this_thread::sleep_for(second * 10);
-    //Turn Right
-    double turn_ = 70;
-    double turn_power = 15;
-    turn(turn_, turn_power);
+  pwr = 1;
 
-    this_thread::sleep_for(second * 2);
-    //Back up
-    move_straight(-33, 15);
+  while (true) {
 
-
-    this_thread::sleep_for(second * 6);
-    //Turn Left
-    turn(-turn_, turn_power);
-
-    this_thread::sleep_for(second * 2);
-
-    //Drive to other 4 blocks
-    move_straight(30, move_power);
-
-    this_thread::sleep_for(second * 8);
-
-
-    //Turn Right in line with 4 blocks 
-
-    //Drive Foward and intake 4 blocks
-
-
-    // Lift lift motors to place blocks in goal
-
-    //this_thread::sleep_for(45000);
-
-    MyThread.interrupt();
-    intake_left.stop();
-    intake_right.stop();
-    hinge_left.stop();
-    hinge_right.stop();
-
-
-    //lift_motor.startSpinFor(fwd, 50, rotationUnits::deg);
+    if ((pot_left.value(deg) > pot_left_poss - tol) && (pot_left.value(deg) < pot_left_poss + tol)) { //if within tolerance, dont move 
+      hinge_left.spin(fwd, 0, pct);
+    } 
+    else if (pot_left.value(deg) > pot_left_poss) { //move out
+      hinge_left.spin(fwd, -pwr, pct);
+    }
+    else if (pot_left.value(deg) < pot_left_poss) //move in
+    {
+      hinge_left.spin(fwd, pwr, pct);
+    }
+    // right
+    if ((pot_right.value(deg) < pot_right_poss + tol) && (pot_right.value(deg) > pot_right_poss - tol)) { // if within tolerance, dont move
+      hinge_right.spin(fwd, 0, pct);
+    } 
+    else if (pot_right.value(deg) > pot_right_poss) { //move out
+      hinge_right.spin(fwd, pwr, pct);
+    }
+    else if (pot_right.value(deg) < pot_right_poss) //move in
+    {
+      hinge_right.spin(fwd, -pwr, pct);
+    }
     
+    this_thread::sleep_for(50);
+  }
+  return 0;
+}
+
+int main(){
+
+  double second = 1000;
+  float move_power = 8;
+  double turn_ = 70;
+  double turn_power = 15;
+
+  // Set hinge position and intake to separate thread and start
+  thread intake = thread(hingePosition);
+  this_thread::sleep_for(second/2);
+
+  // Drive Foward and intake 4 blocks
+  move_straight(36, move_power);
+  this_thread::sleep_for(second * 10);
+
+  // Turn Right to approx 45 degrees
+  turn(turn_, turn_power);
+  this_thread::sleep_for(second * 1.5);
+
+  // Back up
+  move_straight(-32.5, 30);
+  this_thread::sleep_for(second * 3.2);
+
+  // Turn Left to undo the previous turn
+  turn(-(turn_-1), turn_power);
+  this_thread::sleep_for(second * 1.5);
+
+  // Drive Forward and intake other 5 blocks
+  move_straight(30, move_power);
+  this_thread::sleep_for(second * 7);
+
+  // Back up
+  move_straight(-6, 30);
+  this_thread::sleep_for(second * 2.5);
+
+  // Turn Right to approx 90 degrees
+  turn(190, turn_power);
+  this_thread::sleep_for(second * 3.5);
+
+  // Move Forward to goal zone
+  move_straight(34, 15);
+  this_thread::sleep_for(second * 7.5);
+
+  // Lift Tray and place tower
+  intake.interrupt();
+  intake_left.stop();
+  intake_right.stop();
+  hinge_left.stop();
+  hinge_right.stop();
+  thread stack = thread(stack_tower);
+  lift(760, 16);
+  this_thread::sleep_for(500000);
+  stack.interrupt();
+  
   return 0;
 }
