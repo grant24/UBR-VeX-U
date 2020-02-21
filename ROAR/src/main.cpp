@@ -47,12 +47,12 @@ bool hinge = true;
 
 // hinge power (percent), tolerance (int), incrementer (degree)
 double lift_pwr = .05;
-double pwr = 3;
+double pwr = 3.5;
 int tol = 1;
 
 // initial potentiometer positions
-double pot_left_pos = 72.8 + 16;
-double pot_right_pos = 144.2 - 16;
+double pot_left_pos = 72.8 + 18;
+double pot_right_pos = 144.2 - 18;
 
 // inch to wheel revolution conversion
 const float gearRat = 1; // .5 turn of motor = 1 turn of wheel, 1 if directly connected to motor without gears    
@@ -145,8 +145,8 @@ int stack_tower() {
   vex::pot pot_left = vex::pot(Brain.ThreeWirePort.A);
   vex::pot pot_right = vex::pot(Brain.ThreeWirePort.B);
 
-  double pot_left_poss = pot_left_pos - 16;
-  double pot_right_poss  = pot_right_pos + 16;
+  double pot_left_poss = pot_left_pos - 18;
+  double pot_right_poss  = pot_right_pos + 18;
 
   pwr = 1;
 
@@ -207,19 +207,23 @@ int main(){
   this_thread::sleep_for(second * 1.5);
 
   // Drive Forward and intake other 5 blocks
-  move_straight(30, move_power);
-  this_thread::sleep_for(second * 7);
-
-  // Back up
-  move_straight(-6, 30);
-  this_thread::sleep_for(second * 2.5);
+  move_straight(34, move_power);
+  this_thread::sleep_for(second * 8);
 
   // Turn Right to approx 90 degrees
-  turn(190, turn_power);
-  this_thread::sleep_for(second * 3.5);
+  turn(160, turn_power);
+  this_thread::sleep_for(second * 3.0);
+
+  // Move Forward a small amount
+  move_straight(11, 30);
+  this_thread::sleep_for(second * 2);
+
+  // Turn Right to face goal zone
+  turn(50, turn_power);
+  this_thread::sleep_for(second * 2);
 
   // Move Forward to goal zone
-  move_straight(34, 15);
+  move_straight(39, 15);
   this_thread::sleep_for(second * 7.5);
 
   // Lift Tray and place tower
