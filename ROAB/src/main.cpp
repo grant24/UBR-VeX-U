@@ -145,10 +145,10 @@ int stack_tower() {
   vex::pot pot_left = vex::pot(Brain.ThreeWirePort.A);
   vex::pot pot_right = vex::pot(Brain.ThreeWirePort.B);
 
-  double pot_left_poss = pot_left_pos - 18;
-  double pot_right_poss  = pot_right_pos + 18;
+  double pot_left_poss = pot_left_pos - 22;
+  double pot_right_poss  = pot_right_pos + 22;
 
-  pwr = 1;
+  pwr = 3;
 
   while (true) {
 
@@ -199,7 +199,7 @@ int main(){
   this_thread::sleep_for(second * 1.4);
 
   // Back up
-  move_straight(-32, 30);
+  move_straight(-32.5, 30);
   this_thread::sleep_for(second * 3);
 
   // Turn Left to undo the previous turn
@@ -215,15 +215,15 @@ int main(){
   this_thread::sleep_for(second * 2.8);
 
   // Move Forward a small amount
-  move_straight(8.5, 30);
+  move_straight(6, 30);
   this_thread::sleep_for(second * 1.5);
 
   // Turn Right to face goal zone
-  turn(-51.5, turn_power);
+  turn(-48.0, turn_power);
   this_thread::sleep_for(second * 1.2);
 
   // Move Forward to goal zone
-  move_straight(37, 20);
+  move_straight(35, 20);
   this_thread::sleep_for(second * 6.5);
 
   // Lift Tray and place tower
