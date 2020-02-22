@@ -95,8 +95,8 @@ void lift(float degrees, float power) {
   lift_motor_0.startRotateFor(degrees, rotationUnits::deg, power, velocityUnits::pct);
   lift_motor_1.startRotateFor(degrees, rotationUnits::deg, power, velocityUnits::pct);
   this_thread::sleep_for(5000);
-  move_straight(1, 2.5);
-  this_thread::sleep_for(1000);
+  // move_straight(1, 2.5);
+  // this_thread::sleep_for(1000);
   move_straight(-20, 5);
   this_thread::sleep_for(2000);
   lift_motor_0.startRotateTo(0, rotationUnits::deg, power, velocityUnits::pct);
