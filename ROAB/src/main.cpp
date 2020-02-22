@@ -207,23 +207,23 @@ int main(){
   this_thread::sleep_for(second * 1.5);
 
   // Drive Forward and intake other 5 blocks
-  move_straight(34, move_power);
-  this_thread::sleep_for(second * 8);
+  move_straight(24, move_power);
+  this_thread::sleep_for(second * 5);
 
   // Turn Right to approx 90 degrees
   turn(-160, turn_power);
   this_thread::sleep_for(second * 2.8);
 
   // Move Forward a small amount
-  move_straight(7, 30);
-  this_thread::sleep_for(second * 1.5);
+  move_straight(16, 30);
+  this_thread::sleep_for(second * 3);
 
   // Turn Right to face goal zone
-  turn(-48.0, turn_power);
+  turn(-50.0, turn_power);
   this_thread::sleep_for(second * 1.2);
 
   // Move Forward to goal zone
-  move_straight(37, 20);
+  move_straight(28, 20);
   this_thread::sleep_for(second * 6.5);
 
   // Lift Tray and place tower
