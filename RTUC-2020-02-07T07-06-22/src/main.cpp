@@ -41,10 +41,61 @@ bool grab_bool = true;
 double grab_time = Brain.Timer.time(sec);
 int grab_mode = 0;
 
+/* MAINTAIN POSITION */
+void maintain_claw(double position) {
+  double tol = 2;
+  double pwr = 8;
+  if ((claw_angle.rotation(deg) > position - tol) && (claw_angle.rotation(deg) < position + tol)) {
+    claw_angle.spin(fwd, 0, pct);
+  }
+  else if (claw_angle.rotation(deg) < position) {
+    left_lift.spin(fwd, 0, pct);
+    right_lift.spin(fwd, 0, pct);
+  }
+  else if (claw_angle.rotation(deg) > position) {
+    claw_angle.spin(directionType::rev, pwr, pct);
+  }
+}
+
+/* MAINTAIN POSITION */
+void maintain_lift(double position_0, double position_1) {
+  double tol = 3;
+  double pwr = 15;
+  if ((left_lift.rotation(deg) > position_0 + tol) && (left_lift.rotation(deg) < position_0 - tol)) {
+    left_lift.spin(fwd, 0, pct);
+    right_lift.spin(fwd, 0, pct);
+  }
+  else if (left_lift.rotation(deg) > position_0) {
+    left_lift.spin(fwd, pwr, pct);
+    right_lift.spin(fwd, pwr, pct);
+  }
+  else if (left_lift.rotation(deg) < position_0) {
+    left_lift.spin(fwd, -pwr, pct);
+    right_lift.spin(fwd, -pwr, pct);
+  }
+  if ((right_lift.rotation(deg) > position_1 + tol) && (right_lift.rotation(deg) < position_1 - tol)) {
+    left_lift.spin(fwd, 0, pct);
+    right_lift.spin(fwd, 0, pct);
+  }
+  else if (right_lift.rotation(deg) > position_1) {
+    left_lift.spin(fwd, pwr, pct);
+    right_lift.spin(fwd, pwr, pct);
+  }
+  else if (right_lift.rotation(deg) < position_1) {
+    left_lift.spin(fwd, -pwr, pct);
+    right_lift.spin(fwd, -pwr, pct);
+  }
+}
+
 
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+
+  double claw_angle_deg = claw_angle.rotation(deg);
+
+  double left_lift_deg = left_lift.rotation(deg);
+  double right_lift_deg = right_lift.rotation(deg);
 
   /*Controller Code*/
   int count = 0;
@@ -60,181 +111,142 @@ int main() {
     left_back.spin(directionType::fwd, (cntrlr.Axis1.value() + cntrlr.Axis3.value()), velocityUnits::pct);
 
     //CLAW ANGLE
-    switch(claw_mode)
-    {
-      //stopped
-      case 0: claw_angle.spin(directionType::fwd, 0, velocityUnits::pct);
-              if(cntrlr.ButtonUp.pressing() && claw_angle_bool == true)
-              {
-                claw_mode = 1;
-                claw_angle_bool = false;
-                claw_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonDown.pressing() && claw_angle_bool == true)
-              {
-                claw_mode = 2;
-                claw_angle_bool = false;
-                claw_time = Brain.Timer.time(sec);
-              }
-              break;
-
-      //UP
-      case 1: claw_angle.spin(directionType::fwd, 5, velocityUnits::pct);
-              if(cntrlr.ButtonUp.pressing() && claw_angle_bool == true)
-              {
-                claw_mode = 0;
-                claw_angle_bool = false;
-                claw_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonDown.pressing() && claw_angle_bool == true)
-              {
-                claw_mode = 2;
-                claw_angle_bool = false;
-                claw_time = Brain.Timer.time(sec);
-              }
-              break;
-
-      //DOWN
-      case 2:claw_angle.spin(directionType::rev, 5, velocityUnits::pct);
-              if(cntrlr.ButtonUp.pressing() && claw_angle_bool == true)
-              {
-                claw_mode = 1;
-                claw_angle_bool = false;
-                claw_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonDown.pressing() && claw_angle_bool == true)
-              {
-                claw_mode = 0;
-                claw_angle_bool = false;
-                claw_time = Brain.Timer.time(sec);
-              }
-              break;
-
+    if (cntrlr.ButtonL1.pressing()) {
+      claw_angle_deg += 1;  
     }
-          // cooldown for claw (0.5 seconds)
-      if (Brain.Timer.time(sec) - claw_time > 0.5 && claw_angle_bool == false) {
-        claw_angle_bool = true;
-      }
-
-
-
-    //CLAW GRAB
-    switch(grab_mode)
-    {
-      //stopped
-      case 0: grab.spin(directionType::fwd, 0, velocityUnits::pct);
-              if(cntrlr.ButtonL2.pressing() && claw_angle_bool == true)
-              {
-                grab_mode = 1;
-                grab_bool = false;
-                grab_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonR2.pressing() && claw_angle_bool == true)
-              {
-                grab_mode = 2;
-                grab_bool = false;
-                grab_time = Brain.Timer.time(sec);
-              }
-              break;
-
-      //GRAB
-      case 1: grab.spin(directionType::fwd, 10, velocityUnits::pct);
-              if(cntrlr.ButtonL2.pressing() && claw_angle_bool == true)
-              {
-                grab_mode = 0;
-                grab_bool = false;
-                grab_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonR2.pressing() && claw_angle_bool == true)
-              {
-                grab_mode = 2;
-                grab_bool = false;
-                grab_time = Brain.Timer.time(sec);
-              }
-              break;
-
-      //RELEASE
-      case 2:grab.spin(directionType::rev, 10, velocityUnits::pct);
-              if(cntrlr.ButtonL2.pressing() && claw_angle_bool == true)
-              {
-                grab_mode = 1;
-                grab_bool = false;
-                grab_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonR2.pressing() && claw_angle_bool == true)
-              {
-                grab_mode = 0;
-                grab_bool = false;
-                grab_time = Brain.Timer.time(sec);
-              }
-              break;
-
+    if (cntrlr.ButtonL2.pressing()) {
+      claw_angle_deg -= 1;
     }
-          // cooldown for claw grab (0.5 seconds)
-      if (Brain.Timer.time(sec) - grab_time > 0.5 && grab_bool == false) {
-        grab_bool = true;
-      }
+    maintain_claw(claw_angle_deg);
 
-
-    //Lift
-    switch(lift_mode)
-    {
-      //stopped
-      case 0: left_lift.spin(directionType::fwd, 0, velocityUnits::pct);
-              right_lift.spin(directionType::fwd, 0, velocityUnits::pct);
-              if(cntrlr.ButtonX.pressing() && claw_angle_bool == true)
-              {
-                lift_mode = 1;
-                lift_bool = false;
-                lift_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonB.pressing() && claw_angle_bool == true)
-              {
-                lift_mode = 2;
-                lift_bool = false;
-                lift_time = Brain.Timer.time(sec);
-              }
-              break;
-
-      //UP
-      case 1: left_lift.spin(directionType::fwd, 50, velocityUnits::pct);
-              right_lift.spin(directionType::fwd, 50, velocityUnits::pct);
-              if(cntrlr.ButtonX.pressing() && claw_angle_bool == true)
-              {
-                lift_mode = 0;
-                lift_bool = false;
-                lift_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonB.pressing() && claw_angle_bool == true)
-              {
-                lift_mode = 2;
-                lift_bool = false;
-                lift_time = Brain.Timer.time(sec);
-              }
-              break;
-
-      //DOWN
-      case 2: left_lift.spin(directionType::rev, 50, velocityUnits::pct);
-              right_lift.spin(directionType::rev, 50, velocityUnits::pct);
-              if(cntrlr.ButtonX.pressing() && claw_angle_bool == true)
-              {
-                lift_mode = 1;
-                lift_bool = false;
-                lift_time = Brain.Timer.time(sec);
-              }
-              if(cntrlr.ButtonB.pressing() && claw_angle_bool == true)
-              {
-                lift_mode = 0;
-                lift_bool = false;
-                lift_time = Brain.Timer.time(sec);
-              }
-              break;
-
+    //LIFT ANGLE
+    if (cntrlr.ButtonR2.pressing()) {
+      left_lift_deg += 1;
+      right_lift_deg += 1;
     }
-          // cooldown for intake (0.5 seconds)
-      if (Brain.Timer.time(sec) - lift_time > 0.5 && lift_mode == false) {
-        lift_mode = true;
-      }
+    else if (cntrlr.ButtonR1.pressing()) {
+      left_lift_deg -= 1;
+      right_lift_deg -= 1;
+    }
+    maintain_lift(left_lift_deg, right_lift_deg);
+
+    // //CLAW GRAB
+    // switch(grab_mode)
+    // {
+    //   //stopped
+    //   case 0: grab.spin(directionType::fwd, 0, velocityUnits::pct);
+    //           if(cntrlr.ButtonL2.pressing() && claw_angle_bool == true)
+    //           {
+    //             grab_mode = 1;
+    //             grab_bool = false;
+    //             grab_time = Brain.Timer.time(sec);
+    //           }
+    //           if(cntrlr.ButtonR2.pressing() && claw_angle_bool == true)
+    //           {
+    //             grab_mode = 2;
+    //             grab_bool = false;
+    //             grab_time = Brain.Timer.time(sec);
+    //           }
+    //           break;
+
+    //   //GRAB
+    //   case 1: grab.spin(directionType::fwd, 10, velocityUnits::pct);
+    //           if(cntrlr.ButtonL2.pressing() && claw_angle_bool == true)
+    //           {
+    //             grab_mode = 0;
+    //             grab_bool = false;
+    //             grab_time = Brain.Timer.time(sec);
+    //           }
+    //           if(cntrlr.ButtonR2.pressing() && claw_angle_bool == true)
+    //           {
+    //             grab_mode = 2;
+    //             grab_bool = false;
+    //             grab_time = Brain.Timer.time(sec);
+    //           }
+    //           break;
+
+    //   //RELEASE
+    //   case 2:grab.spin(directionType::rev, 10, velocityUnits::pct);
+    //           if(cntrlr.ButtonL2.pressing() && claw_angle_bool == true)
+    //           {
+    //             grab_mode = 1;
+    //             grab_bool = false;
+    //             grab_time = Brain.Timer.time(sec);
+    //           }
+    //           if(cntrlr.ButtonR2.pressing() && claw_angle_bool == true)
+    //           {
+    //             grab_mode = 0;
+    //             grab_bool = false;
+    //             grab_time = Brain.Timer.time(sec);
+    //           }
+    //           break;
+
+    // }
+    //       // cooldown for claw grab (0.5 seconds)
+    //   if (Brain.Timer.time(sec) - grab_time > 0.5 && grab_bool == false) {
+    //     grab_bool = true;
+    //   }
+
+
+    // //Lift
+    // switch(lift_mode)
+    // {
+    //   //stopped
+    //   case 0: left_lift.spin(directionType::fwd, 0, velocityUnits::pct);
+    //           right_lift.spin(directionType::fwd, 0, velocityUnits::pct);
+    //           if(cntrlr.ButtonX.pressing() && claw_angle_bool == true)
+    //           {
+    //             lift_mode = 1;
+    //             lift_bool = false;
+    //             lift_time = Brain.Timer.time(sec);
+    //           }
+    //           if(cntrlr.ButtonB.pressing() && claw_angle_bool == true)
+    //           {
+    //             lift_mode = 2;
+    //             lift_bool = false;
+    //             lift_time = Brain.Timer.time(sec);
+    //           }
+    //           break;
+
+    //   //UP
+    //   case 1: left_lift.spin(directionType::fwd, 100, velocityUnits::pct);
+    //           right_lift.spin(directionType::fwd, 100, velocityUnits::pct);
+    //           if(cntrlr.ButtonX.pressing() && claw_angle_bool == true)
+    //           {
+    //             lift_mode = 0;
+    //             lift_bool = false;
+    //             lift_time = Brain.Timer.time(sec);
+    //           }
+    //           if(cntrlr.ButtonB.pressing() && claw_angle_bool == true)
+    //           {
+    //             lift_mode = 2;
+    //             lift_bool = false;
+    //             lift_time = Brain.Timer.time(sec);
+    //           }
+    //           break;
+
+    //   //DOWN
+    //   case 2: left_lift.spin(directionType::rev, 100, velocityUnits::pct);
+    //           right_lift.spin(directionType::rev, 100, velocityUnits::pct);
+    //           if(cntrlr.ButtonX.pressing() && claw_angle_bool == true)
+    //           {
+    //             lift_mode = 1;
+    //             lift_bool = false;
+    //             lift_time = Brain.Timer.time(sec);
+    //           }
+    //           if(cntrlr.ButtonB.pressing() && claw_angle_bool == true)
+    //           {
+    //             lift_mode = 0;
+    //             lift_bool = false;
+    //             lift_time = Brain.Timer.time(sec);
+    //           }
+    //           break;
+
+    // }
+    //       // cooldown for intake (0.5 seconds)
+    //   if (Brain.Timer.time(sec) - lift_time > 0.5 && lift_bool == false) {
+    //     lift_mode = true;
+    //   }
     
     /*CLAW ANGLE*/
     printf("claw angle (deg) => %f\n", claw_angle.rotation(deg));
