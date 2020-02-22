@@ -69,13 +69,15 @@ int main() {
       claw_angle.spin(directionType::fwd, 0, velocityUnits::pct);
       claw_angle_bool = false;
     }
+
+
     //Claw Grab
-    if(cntrlr.ButtonL2.pressing())
+    if(cntrlr.ButtonL2.pressing() && grab_bool == false)
     {
       claw_grab.spin(directionType::fwd);
       grab_bool = true;
     }
-    else if(cntrlr.ButtonR2.pressing())
+    else if(cntrlr.ButtonR2.pressing() && grab_bool == false)
     {
       claw_grab.spin(directionType::rev);
       grab_bool = true;
@@ -85,6 +87,8 @@ int main() {
       claw_grab.spin(directionType::fwd, 0, velocityUnits::pct);
       grab_bool = false;
     }
+
+
     //LIFT
     if(cntrlr.ButtonX.pressing())
     {
