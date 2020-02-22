@@ -224,7 +224,7 @@ int main(){
 
   // Move Forward to goal zone
   move_straight(39, 20);
-  this_thread::sleep_for(second * 7);
+  this_thread::sleep_for(second * 6.5);
 
   // Lift Tray and place tower
   intake.interrupt();
