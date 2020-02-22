@@ -95,8 +95,8 @@ void lift(float degrees, float power) {
   lift_motor_0.startRotateFor(degrees, rotationUnits::deg, power, velocityUnits::pct);
   lift_motor_1.startRotateFor(degrees, rotationUnits::deg, power, velocityUnits::pct);
   this_thread::sleep_for(5000);
-  // move_straight(1, 2.5);
-  // this_thread::sleep_for(1000);
+  move_straight(1, 2.5);
+  this_thread::sleep_for(1000);
   move_straight(-20, 5);
   this_thread::sleep_for(2000);
   lift_motor_0.startRotateTo(0, rotationUnits::deg, power, velocityUnits::pct);
@@ -207,7 +207,7 @@ int main(){
   this_thread::sleep_for(second * 1.5);
 
   // Drive Forward and intake other 5 blocks
-  move_straight(34, move_power);
+  move_straight(28, move_power);
   this_thread::sleep_for(second * 8);
 
   // Turn Right to approx 90 degrees
@@ -215,7 +215,7 @@ int main(){
   this_thread::sleep_for(second * 2.8);
 
   // Move Forward a small amount
-  move_straight(9, 30);
+  move_straight(6, 30);
   this_thread::sleep_for(second * 1.5);
 
   // Turn Right to face goal zone
@@ -223,7 +223,7 @@ int main(){
   this_thread::sleep_for(second * 1.2);
 
   // Move Forward to goal zone
-  move_straight(39, 20);
+  move_straight(37.5, 20);
   this_thread::sleep_for(second * 6.5);
 
   // Lift Tray and place tower
