@@ -51,14 +51,14 @@ int main() {
   double pot_left_pos = 72.8;
   double pot_right_pos = 144.2;
   // instances for lift activation
-  double pot_left_poss = 72.82 - 15;
-  double pot_right_poss = 144.5 + 15;
+  double pot_left_poss = 72.82 - 18;
+  double pot_right_poss = 144.5 + 18;
 
   // hinge power (percent), tolerance (int), incrementer (degree)
   double lift_pwr = 1;
   double pwr = 6;
   double tol = 0.8;
-  int inc = 5;
+  int inc = 18;
 
   // initial hinge timer and engager
   double hinge_time = Brain.Timer.time(sec);
