@@ -1,5 +1,6 @@
 #include "main.h"
 
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -76,17 +77,22 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+
+	Controller cntrlr;
+
+	std::shared_ptr<ChassisController> drive = ChassisControllerBuilder()
+		.withMotors( {-8, -9}, {18, 19})
+		.withDimensions(AbstractMotor::gearset::green, {{4_in, 13_in}, imev5GreenTPR})
+		.build();
 
 	while (true) {
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
-										 
+		drive->getModel()->arcade(cntrlr.getAnalog(ControllerAnalog::leftY),
+															cntrlr.getAnalog(ControllerAnalog::rightX));
 
-		pros::delay(20);
+		pros::delay(10);
 	}
 }
