@@ -203,7 +203,7 @@ void autonomous(void) {
   
   double second = 1000;
   float move_power = 8;
-  double turn_ = 70;
+  double turn_ = 68;
   double turn_power = 15;
 
   // Set hinge position and intake to separate thread and start
@@ -235,19 +235,19 @@ void autonomous(void) {
   this_thread::sleep_for(second * 2.8);
 
   // Move Forward a small amount
-  move_straight(24, 30);
+  move_straight(26, 30);
   this_thread::sleep_for(second * 3);
 
   // Turn Right to face goal zone
   turn(50, turn_power);
   this_thread::sleep_for(second * 1.2);
 
-  // Move Forward to goal zone
+  // Move Forward into goal zone
   move_straight(120, 20);
   this_thread::sleep_for(second * 3.5);
 
-  // Move Backward 1 inch
-  move_straight(-2.1, move_power);
+  // Move Backward a little
+  move_straight(-2.5, move_power);
   this_thread::sleep_for(second * 1);
 
   // Lift Tray and place tower

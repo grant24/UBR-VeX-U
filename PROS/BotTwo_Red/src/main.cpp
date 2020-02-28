@@ -60,7 +60,58 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
+	// Building the chassis
+	std::shared_ptr<ChassisController> chassis = ChassisControllerBuilder()
+		.withMotors( {-8, 9}, {18, -19})
+		.withDimensions(AbstractMotor::gearset::green, {{4_in, 13_in}, imev5GreenTPR})
+		.build();
 
+		// Lift Motor controller & variables
+		const int left_lift = 6;
+		const int right_lift = 5;
+		const int num_heights = 3;
+		const int heights[num_heights] = {0, 680, 4200};
+		ControllerButton R1(ControllerDigital::R1);
+		ControllerButton R2(ControllerDigital::R2);
+		std::shared_ptr<AsyncPositionController<double, double>> lift_control =
+	  	AsyncPosControllerBuilder()
+				.withMotor({-left_lift, right_lift})
+				.build();
+		int goal_height = 0;
+
+		// Claw Angle controller & variables
+		const int claw_angle = 2;
+		const int inc = 30;
+		const int num_height = 3;
+		const int height[num_height] = {0, -350, -600};
+		int angle = 0;
+		ControllerButton A(ControllerDigital::A);
+		ControllerButton B(ControllerDigital::B);
+		std::shared_ptr<AsyncPositionController<double, double>> angle_control =
+		  AsyncPosControllerBuilder()
+				.withMotor(claw_angle)
+				.build();
+
+		// Claw Grab controller & variables
+		const int claw_grab = 1;
+		const double claw_open = 220;
+		const double claw_closed = 30;
+		bool engage = false;
+		ControllerButton L1(ControllerDigital::L1);
+		ControllerButton L2(ControllerDigital::L2);
+		std::shared_ptr<AsyncPositionController<double, double>> grab_control =
+			AsyncPosControllerBuilder()
+				.withMotor(claw_grab)
+				.build();
+
+		// Auton Movement
+		lift_control->setTarget(heights[1] - 280);
+
+		chassis->moveDistance(30_in);
+		chassis->waitUntilSettled();
+
+		chassis->moveDistance(-20_in);
+		chassis->waitUntilSettled();
 }
 
 /**
@@ -72,7 +123,7 @@ void autonomous() {
  * If no competition control is connected, this function will run immediately
  * following initialize().
  *
- * If the robot is disabled or communications is lost, the
+ * If the robot is disabled or communications is lost, th]
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
@@ -80,18 +131,111 @@ void opcontrol() {
 
 	Controller cntrlr;
 
+	// Building the chassis
 	std::shared_ptr<ChassisController> drive = ChassisControllerBuilder()
-		.withMotors( {-8, -9}, {18, 19})
+		.withMotors( {-8, 9}, {18, -19})
 		.withDimensions(AbstractMotor::gearset::green, {{4_in, 13_in}, imev5GreenTPR})
 		.build();
+
+	// Lift Motor controller & variables
+	const int left_lift = 6;
+	const int right_lift = 5;
+	const int num_heights = 4;
+	const int heights[num_heights] = {0, 260, 680, 4200};
+	ControllerButton R1(ControllerDigital::R1);
+	ControllerButton R2(ControllerDigital::R2);
+	std::shared_ptr<AsyncPositionController<double, double>> lift_control =
+  	AsyncPosControllerBuilder()
+			.withMotor({-left_lift, right_lift})
+			.build();
+	int goal_height = 0;
+	ControllerButton UP(ControllerDigital::up);
+	ControllerButton DOWN(ControllerDigital::down);
+	int lift_angle;
+	int lift_inc = 100;
+
+	// Claw Angle controller & variables
+	const int claw_angle = 2;
+	const int inc = 30;
+	const int num_height = 4;
+	const int height[num_height] = {0, -10, -300, -600};
+	int angle = 0;
+	ControllerButton A(ControllerDigital::A);
+	ControllerButton B(ControllerDigital::B);
+	std::shared_ptr<AsyncPositionController<double, double>> angle_control =
+	  AsyncPosControllerBuilder()
+			.withMotor(claw_angle)
+			.build();
+
+	// Claw Grab controller & variables
+	const int claw_grab = 3;
+	const double claw_open = 220;
+	const double claw_closed = 0;
+	ControllerButton L1(ControllerDigital::L1);
+	ControllerButton L2(ControllerDigital::L2);
+	std::shared_ptr<AsyncPositionController<double, double>> grab_control =
+		AsyncPosControllerBuilder()
+			.withMotor(claw_grab)
+			.build();
 
 	while (true) {
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
-		drive->getModel()->arcade(cntrlr.getAnalog(ControllerAnalog::leftY),
-															cntrlr.getAnalog(ControllerAnalog::rightX));
+		// Setting Chassis to arcade drive
+		if (goal_height == 2) {
+			drive->getModel()->arcade(cntrlr.getAnalog(ControllerAnalog::leftY ) / 3,
+																cntrlr.getAnalog(ControllerAnalog::rightX) / 3);
+		} else {
+			drive->getModel()->arcade(cntrlr.getAnalog(ControllerAnalog::leftY),
+																cntrlr.getAnalog(ControllerAnalog::rightX));
+		}
+
+		// Lifting Arm to set position
+		if (R1.changedToPressed() && goal_height < num_heights - 1) {
+      goal_height++;
+      lift_control->setTarget(heights[goal_height]);
+			lift_angle = heights[goal_height];
+			angle_control->setTarget(height[goal_height]);
+			angle = height[goal_height];
+    } else if (R2.changedToPressed() && goal_height > 0) {
+      goal_height--;
+      lift_control->setTarget(heights[goal_height]);
+			lift_angle = heights[goal_height];
+			angle_control->setTarget(height[goal_height]);
+			angle = height[goal_height];
+    }
+
+		// Angling Claw to set position
+		if (A.changedToPressed()) {
+			angle += inc;
+      angle_control->setTarget(angle);
+    } else if (B.changedToPressed()) {
+			angle -= inc;
+      angle_control->setTarget(angle);
+    }
+
+		// Open/Close Claw to grab cube
+		if (L1.changedToPressed()) {
+			grab_control->setTarget(claw_open);
+		}
+		else if (L2.changedToPressed()) {
+			grab_control->setTarget(claw_closed);
+		}
+
+		// Increment Lift from current position
+		if (UP.changedToPressed()) {
+			lift_control->setTarget(lift_angle + lift_inc);
+			lift_angle += lift_inc;
+		}
+		if (DOWN.changedToPressed()) {
+			lift_control->setTarget(lift_angle - lift_inc);
+			lift_angle -= lift_inc;
+		}
+
+		// Motor claw_grab_motor = Motor(claw_angle);
+		// printf("claw grab position => %f\n", claw_grab_motor.getPosition());
 
 		pros::delay(10);
 	}
