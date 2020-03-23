@@ -77,8 +77,8 @@ void opcontrol() {
 
 	Controller cntrlr;
 
-	Motor hinge_left = Motor(12);
-	Motor hinge_right = Motor(11);
+	// Motor hinge_left = Motor(12);
+	// Motor hinge_right = Motor(11);
 
 	// Building the chassis
 	std::shared_ptr<ChassisController> drive = ChassisControllerBuilder()
@@ -88,15 +88,19 @@ void opcontrol() {
 
 	// Hinge Position Controller
 	const int hinge_left = 12;
-	const int hinge_right = -11;
+	const int hinge_right = 11;
 	const int num_pos = 3;
-	const int hinge_pos_left[num_pos] = {0, 0, 59};
+	const int hinge_pos_left[num_pos] = {0, 0, 103};
 	const int hinge_pos_right[num_pos] = {0, 0, -103};
 	ControllerButton UP(ControllerDigital::up);
 	ControllerButton DOWN(ControllerDigital::down);
-	std::shared_ptr<AsyncPositionController<double, double>> hinge_control =
+	std::shared_ptr<AsyncPositionController<double, double>> hinge_left_control =
 		AsyncPosControllerBuilder()
-			.withMotor({hinge_left, hinge_right})
+			.withMotor(hinge_left)
+			.build();
+	std::shared_ptr<AsyncPositionController<double, double>> hinge_right_control =
+		AsyncPosControllerBuilder()
+			.withMotor(hinge_right)
 			.build();
 	int goal_position = 1;
 
@@ -111,7 +115,14 @@ void opcontrol() {
 
 		// Maintiain Hinge position
 		if (UP.changedToPressed() && goal_position < num_pos-1) {
-
+			goal_position++;
+			hinge_left_control->setTarget(hinge_pos_left[goal_position]);
+			hinge_right_control->setTarget(hinge_pos_right[goal_position]);
+		}
+		else if (DOWN.changedToPressed() && goal_position > 0) {
+			goal_position--;
+			hinge_left_control->setTarget(hinge_pos_left[goal_position]);
+			hinge_right_control->setTarget(hinge_pos_right[goal_position]);
 		}
 
 		// // Setting hinge position

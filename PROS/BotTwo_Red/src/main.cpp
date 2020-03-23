@@ -158,9 +158,9 @@ void opcontrol() {
 	const int claw_angle = 2;
 	const int inc = 30;
 	const int num_height = 4;
-	const int height[num_height] = {0, -10, -300, -600};
+	const int height[num_height] = {0, -20, -600, -1000};
 	int angle = 0;
-	ControllerButton A(ControllerDigital::A);
+	ControllerButton X(ControllerDigital::X);
 	ControllerButton B(ControllerDigital::B);
 	std::shared_ptr<AsyncPositionController<double, double>> angle_control =
 	  AsyncPosControllerBuilder()
@@ -184,7 +184,7 @@ void opcontrol() {
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
 		// Setting Chassis to arcade drive
-		if (goal_height == 2) {
+		if (goal_height == 3) {
 			drive->getModel()->arcade(cntrlr.getAnalog(ControllerAnalog::leftY ) / 3,
 																cntrlr.getAnalog(ControllerAnalog::rightX) / 3);
 		} else {
@@ -208,7 +208,7 @@ void opcontrol() {
     }
 
 		// Angling Claw to set position
-		if (A.changedToPressed()) {
+		if (X.changedToPressed()) {
 			angle += inc;
       angle_control->setTarget(angle);
     } else if (B.changedToPressed()) {
